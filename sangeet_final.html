@@ -3,474 +3,1141 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Parth & Sai — Sangeet Night</title>
+  <title>Parth Jagtap & Sai Sawant — Sangeet Night</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Cormorant Garamond', serif; color: #f0e8d0; }
+    :root {
+      --gold: #C9A84C;
+      --gold-lt: #F0D080;
+      --gold-dp: #8B6914;
+      --gold-pale: #FAF0C0;
+      --silver: #E8E8F0;
+      --silver-lt: #F5F5FF;
+      --silver-dp: #A0A0B8;
+      --black: #06060A;
+      --black-mid: #0D0C10;
+      --text: #F0E8D0;
+      --text-dim: #A89050;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--black); font-family:'Cormorant Garamond',serif; color:var(--text); }
 
     /* ── SLIDE SYSTEM ── */
-    #stage { width: 100vw; height: 100vh; position: relative; }
-    .slide { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0s; overflow: hidden; }
-    .slide.active { opacity: 1; pointer-events: all; }
-    .slide.entering { animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .slide.entering.back { animation: slideInBack 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .slide.leaving { animation: slideOut 0.6s cubic-bezier(0.7, 0, 0.84, 0) forwards; }
-    .slide.leaving.back { animation: slideOutBack 0.6s cubic-bezier(0.7, 0, 0.84, 0) forwards; }
+    #stage { width:100vw; height:100vh; position:relative; }
+    .slide { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0s; overflow:hidden; }
+    .slide.active { opacity:1; pointer-events:all; }
+    .slide.entering      { animation:slideInFwd  0.9s cubic-bezier(.16,1,.3,1) forwards; }
+    .slide.entering.back { animation:slideInBack 0.9s cubic-bezier(.16,1,.3,1) forwards; }
+    .slide.leaving       { animation:slideOutFwd  0.7s cubic-bezier(.7,0,.84,0) forwards; }
+    .slide.leaving.back  { animation:slideOutBack 0.7s cubic-bezier(.7,0,.84,0) forwards; }
+    @keyframes slideInFwd   { from{opacity:0;transform:translateY(40px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes slideInBack  { from{opacity:0;transform:translateY(-40px) scale(.98)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes slideOutFwd  { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(-30px) scale(1.01)} }
+    @keyframes slideOutBack { from{opacity:1;transform:translateY(0) scale(1)} to{opacity:0;transform:translateY(30px) scale(1.01)} }
 
-    @keyframes slideIn { from { opacity: 0; transform: translateY(40px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    @keyframes slideInBack { from { opacity: 0; transform: translateY(-40px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    @keyframes slideOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-30px) scale(1.01); } }
-    @keyframes slideOutBack { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(30px) scale(1.01); } }
+    /* ── GLOBAL CANVAS ── */
+    #global-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 
-    /* ── CANVAS LAYERS ── */
-    #global-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-    .slide-canvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-    .bg-image { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
-    .bg-overlay { position: absolute; inset: 0; z-index: 1; }
+    /* ── SLIDE CANVAS ── */
+    .slide-canvas { position:absolute; inset:0; z-index:1; pointer-events:none; }
 
-    /* ── PHOTO CAROUSEL ── */
-    .photo-carousel { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; }
-    .photo-carousel img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease; position: absolute; }
-    .photo-carousel img.active { opacity: 1; }
-    .carousel-nav { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 12px; }
-    .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(201, 168, 76, 0.4); cursor: pointer; transition: all 0.3s; border: 1px solid rgba(201, 168, 76, 0.6); }
-    .carousel-dot.active { background: #c9a84c; width: 28px; border-radius: 5px; }
+    /* ── CORNER ORNAMENTS ── */
+    .corner-svg { position:absolute; width:220px; height:220px; opacity:0; z-index:4; }
+    .corner-svg.tl { top:0; left:0; }
+    .corner-svg.tr { top:0; right:0; transform:scaleX(-1); }
+    .corner-svg.bl { bottom:0; left:0; transform:scaleY(-1); }
+    .corner-svg.br { bottom:0; right:0; transform:scale(-1); }
+    .slide.active .corner-svg { animation:cornerFade .9s ease forwards .25s; }
+    @keyframes cornerFade { from{opacity:0} to{opacity:1} }
+
+    /* ── CONTENT LAYER ── */
+    .slide-content { position:relative; z-index:5; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 40px; max-width:1200px; margin:0 auto; }
+
+    /* ── PHOTO PANEL (left half) ── */
+    .photo-panel {
+      position: absolute;
+      left: 0; top: 0;
+      width: 50%; height: 100%;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .photo-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right,
+        rgba(6,6,10,0.6) 0%,
+        rgba(6,6,10,0.15) 22%,
+        rgba(6,6,10,0) 45%,
+        rgba(6,6,10,0.8) 100%
+      );
+      z-index: 10;
+      pointer-events: none;
+    }
+    .photo-panel::before {
+      content: '';
+      position: absolute;
+      right: 0; top: 8%; bottom: 8%;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.5) 40%, rgba(240,208,128,0.7) 60%, transparent);
+      z-index: 11;
+      pointer-events: none;
+    }
+    .photo-layer {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: top center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.8s cubic-bezier(.4,0,.2,1);
+      will-change: transform, opacity;
+      image-rendering: -webkit-optimize-contrast;
+    }
+    .photo-layer.on {
+      opacity: 1;
+      animation: kenBurnsFull 10s ease-in-out forwards;
+    }
+    .photo-layer.peek {
+      position: absolute;
+      left: 0; top: 0;
+      width: 22%;
+      height: 100%;
+      opacity: 0;
+      background-size: cover;
+      background-position: top center;
+      background-repeat: no-repeat;
+      transition: opacity 1.4s cubic-bezier(.4,0,.2,1);
+      z-index: 1;
+      filter: brightness(0.55) saturate(1.1);
+      will-change: transform, opacity;
+    }
+    .photo-layer.peek.on {
+      opacity: 1;
+      animation: kenBurnsPeek 12s ease-in-out forwards;
+    }
+    .peek-divider {
+      position: absolute;
+      left: 22%;
+      top: 6%; bottom: 6%;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(240,208,128,0.8) 30%, rgba(201,168,76,1) 50%, rgba(240,208,128,0.8) 70%, transparent);
+      z-index: 6;
+      pointer-events: none;
+    }
+    .photo-layer.main-layer {
+      left: 22%;
+      width: 78%;
+      z-index: 2;
+    }
+    @keyframes kenBurnsFull {
+      from { transform: scale(1.05) translate(0, 0); }
+      to   { transform: scale(1.0)  translate(-10px, -6px); }
+    }
+    @keyframes kenBurnsPeek {
+      from { transform: scale(1.06) translate(0, 4px); }
+      to   { transform: scale(1.01) translate(0, -4px); }
+    }
+    .photo-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 40% 50%, transparent 38%, rgba(6,6,10,0.55) 100%);
+    }
+    .show-dots { display:flex; gap:6px; justify-content:center; position:absolute; bottom:16px; left:0; right:0; z-index:13; }
+    .show-dot { width:5px; height:5px; border-radius:50%; background:rgba(201,168,76,0.25); border:1px solid rgba(201,168,76,0.4); transition:all .3s; }
+    .show-dot.on { background:var(--gold); width:18px; border-radius:3px; }
+
+    /* ── CONTENT side (right half) ── */
+    .slide-right {
+      position: absolute;
+      right: 0; top: 0;
+      width: 50%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 60px 60px 50px;
+      z-index: 5;
+    }
+
+    /* ── NAV DOTS ── */
+    #nav-dots { position:fixed; bottom:32px; left:50%; transform:translateX(-50%); z-index:8000; display:flex; gap:10px; align-items:center; }
+    .ndot { width:6px; height:6px; border-radius:50%; background:rgba(201,168,76,0.25); border:1px solid rgba(201,168,76,0.4); cursor:pointer; transition:all .35s; }
+    .ndot.active { background:var(--gold); width:24px; border-radius:4px; }
+
+    /* ── SLIDE COUNTER ── */
+    #slide-counter { position:fixed; top:28px; right:40px; z-index:8000; font-family:'Cinzel',serif; font-size:10px; letter-spacing:3px; color:var(--gold-dp); }
 
     /* ── TYPOGRAPHY ── */
-    .hero-title { font-family: 'Cinzel', serif; font-size: clamp(48px, 8vw, 100px); font-weight: 700; color: #f0d080; text-align: center; line-height: 1.1; }
-    .hero-subtitle { font-family: 'Cormorant Garamond', serif; font-size: clamp(24px, 4vw, 48px); color: #a89050; text-align: center; margin-top: 20px; font-style: italic; }
-    .slide-title { font-family: 'Cinzel', serif; font-size: clamp(52px, 7vw, 96px); font-weight: 700; color: #f0e8d0; text-align: center; }
-    .glitch { position: relative; text-shadow: 2px 2px 0px rgba(201, 168, 76, 0.5), -2px -2px 0px rgba(240, 208, 128, 0.5); }
-    .shimmer { background: linear-gradient(90deg, #c9a84c, #f0d080, #c9a84c); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shimmer 3s linear infinite; }
+    .eyebrow { font-family:'Cinzel',serif; font-size:18px; letter-spacing:8px; text-transform:uppercase; color:var(--gold); margin-bottom:22px; }
+    .main-title { font-family:'Cinzel',serif; font-weight:700; line-height:.92; text-align:center; font-size:clamp(60px,8vw,120px); }
+    .main-title span { background:linear-gradient(160deg,var(--gold-dp) 0%,var(--gold) 30%,var(--gold-lt) 52%,var(--silver-lt) 62%,var(--gold) 75%,var(--gold-dp) 100%); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:shimmer 5s linear infinite; }
+    .amp { font-family:'Dancing Script',cursive; color:rgba(201,168,76,0.22); line-height:.85; display:block; font-size:clamp(40px,5vw,80px); }
+    .subtitle { font-family:'Cormorant Garamond',serif; font-style:italic; letter-spacing:3px; color:var(--text-dim); margin-top:16px; font-size:clamp(18px,2.5vw,32px); }
+    .sec-tag { font-family:'Cinzel',serif; font-size:16px; letter-spacing:7px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+    .sec-title { font-family:'Cinzel',serif; font-weight:600; text-align:left; line-height:1.15; color:var(--text); font-size:clamp(42px,5.5vw,72px); }
+    .sec-title em { font-family:'Dancing Script',cursive; font-style:normal; font-size:1.4em; color:var(--gold); display:block; line-height:1; }
+    .orn { display:flex; align-items:center; gap:14px; margin:18px auto; width:fit-content; }
+    .orn-line { width:80px; height:1px; background:linear-gradient(to right,transparent,var(--gold-dp)); }
+    .orn-line.r { background:linear-gradient(to left,transparent,var(--gold-dp)); }
+    .gold-bar { width:160px; height:1px; margin:24px auto; background:linear-gradient(to right,transparent,var(--gold),transparent); }
 
-    @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+    /* ── KEYFRAMES ── */
+    @keyframes shimmer { 0%{background-position:0% center} 100%{background-position:200% center} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes slowSpin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+    @keyframes cornerFade { from{opacity:0} to{opacity:1} }
+    @keyframes glitterPop {
+      0%   { opacity:0; transform:scale(0) rotate(0); }
+      20%  { opacity:1; transform:scale(1.3) rotate(45deg); }
+      60%  { opacity:.8; transform:scale(1) rotate(90deg); }
+      100% { opacity:0; transform:scale(0) rotate(180deg); }
+    }
+    @keyframes petalDrift {
+      0%   { transform:translate(0,0) rotate(0deg); opacity:0; }
+      5%   { opacity:1; }
+      95%  { opacity:.8; }
+      100% { transform:translate(var(--px),var(--py)) rotate(var(--pr)); opacity:0; }
+    }
 
-    /* ── NAV ── */
-    #nav-dots { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 8000; display: flex; gap: 10px; }
-    .ndot { width: 8px; height: 8px; border-radius: 50%; background: rgba(201, 168, 76, 0.25); cursor: pointer; transition: all 0.3s; }
-    .ndot.active { background: #c9a84c; width: 32px; border-radius: 4px; }
-    #slide-counter { position: fixed; top: 28px; right: 40px; z-index: 8000; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; color: #c9a84c; }
+    /* ── STAGGER REVEAL ── */
+    .slide.active .stag { animation:staggerIn .7s cubic-bezier(.16,1,.3,1) both; }
+    .slide.active .stag:nth-child(1){animation-delay:.05s}
+    .slide.active .stag:nth-child(2){animation-delay:.15s}
+    .slide.active .stag:nth-child(3){animation-delay:.25s}
+    .slide.active .stag:nth-child(4){animation-delay:.35s}
+    .slide.active .stag:nth-child(5){animation-delay:.45s}
+    .slide.active .stag:nth-child(6){animation-delay:.55s}
+    @keyframes staggerIn { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
-    @keyframes glow { 0%, 100% { filter: drop-shadow(0 0 10px rgba(201, 168, 76, 0.5)); } 50% { filter: drop-shadow(0 0 25px rgba(240, 208, 128, 0.8)); } }
+    /* ── DOM GLITTER STARS ── */
+    .glitter-star {
+      position:absolute;
+      width:var(--gs);
+      height:var(--gs);
+      pointer-events:none;
+      z-index:3;
+      animation: glitterPop var(--gd) ease-in-out var(--gdelay) infinite;
+    }
 
-    .fade-in-up { animation: fadeInUp 0.8s ease forwards; }
-    .float { animation: float 3s ease-in-out infinite; }
-    .glow { animation: glow 2s ease-in-out infinite; }
+    /* ── FIREWORKS ── */
+    #fw-canvas { position:fixed; inset:0; z-index:7000; pointer-events:none; display:none; }
+    ::-webkit-scrollbar { display:none; }
   </style>
 </head>
 <body>
 
 <canvas id="global-canvas"></canvas>
+<canvas id="fw-canvas"></canvas>
 <div id="nav-dots"></div>
 <div id="slide-counter">01 / 08</div>
 
 <div id="stage">
-  <!-- PAGE 1: HERO -->
-  <div class="slide active" data-slide="0">
-    <canvas class="slide-canvas" id="canvas-hero"></canvas>
-    <div style="position: relative; z-index: 5; text-align: center;">
-      <h1 class="hero-title fade-in-up" style="animation-delay: 0.2s;">Parth</h1>
-      <div style="font-family: 'Dancing Script', cursive; font-size: clamp(36px, 5vw, 72px); color: #c9a84c; margin: 10px 0;">& </div>
-      <h1 class="hero-title fade-in-up" style="animation-delay: 0.4s;">Sai</h1>
-      <p class="hero-subtitle fade-in-up" style="animation-delay: 0.6s;">Sangeet Night</p>
+
+  <!-- ════════════ SLIDE 0: HERO ════════════ -->
+  <div class="slide active" data-slide="0" data-bg="hero">
+    <canvas class="slide-canvas" data-fx="mandala"></canvas>
+
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(0 38 38)" opacity=".7"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(90 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+      <path d="M60,20 Q90,15 95,40 Q100,65 75,70 Q55,72 52,55 Q50,42 60,38 Q68,35 70,44 Q72,52 64,54" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity=".7"/>
+      <path d="M20,60 Q15,90 40,95 Q65,100 70,75 Q72,55 55,52 Q42,50 38,60" fill="none" stroke="#F0D080" stroke-width=".8" opacity=".6"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="50" cy="12" r="1.5" fill="#C9A84C" opacity=".4"/>
+      <circle cx="70" cy="12" r="1.5" fill="#C9A84C" opacity=".35"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="50" r="1.5" fill="#C9A84C" opacity=".4"/>
+      <circle cx="12" cy="70" r="1.5" fill="#C9A84C" opacity=".35"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(0 38 38)" opacity=".7"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(90 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+      <path d="M60,20 Q90,15 95,40 Q100,65 75,70 Q55,72 52,55 Q50,42 60,38 Q68,35 70,44 Q72,52 64,54" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity=".7"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="50" cy="12" r="1.5" fill="#C9A84C" opacity=".4"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="50" r="1.5" fill="#C9A84C" opacity=".4"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(45 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+      <path d="M20,60 Q15,90 40,95 Q65,100 70,75 Q72,55 55,52 Q42,50 38,60" fill="none" stroke="#F0D080" stroke-width=".8" opacity=".6"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(45 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+
+    <div class="slide-content" style="text-align:center;">
+      <p class="eyebrow stag">You Are Warmly Invited To</p>
+      <div class="main-title stag"><span>PARTH</span></div>
+      <div class="amp stag">&amp;</div>
+      <div class="main-title stag"><span>SAI</span></div>
+      <p class="subtitle stag">Sangeet Night</p>
     </div>
   </div>
 
-  <!-- PAGE 2: GANESH VANDANA -->
-  <div class="slide" data-slide="1">
-    <canvas class="slide-canvas" id="canvas-ganesh"></canvas>
+  <!-- ════════════ SLIDE 1: GANESH VANDANA ════════════ -->
+  <div class="slide" data-slide="1" data-bg="ganesh-full">
+    <canvas class="slide-canvas" data-fx="ganeshFull"></canvas>
+
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <path d="M60,70 Q50,50 55,35 Q60,22 72,22 Q84,22 89,35 Q94,50 84,70 Z" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity=".8"/>
+      <circle cx="50" cy="50" r="6" fill="#C9A84C" opacity=".85"/>
+      <circle cx="50" cy="50" r="3" fill="#F0D080"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <circle cx="50" cy="50" r="6" fill="#C9A84C" opacity=".85"/>
+      <circle cx="50" cy="50" r="3" fill="#F0D080"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <circle cx="50" cy="50" r="6" fill="#C9A84C" opacity=".85"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+    </svg>
   </div>
 
-  <!-- PAGE 3: GROOM SLIDESHOW -->
-  <div class="slide" data-slide="2">
-    <div class="photo-carousel" id="groom-carousel">
-      <img src="groom/1.jpeg" class="active" alt="Parth">
-      <img src="groom/2.jpeg" alt="Parth">
-      <img src="groom/3.jpeg" alt="Parth">
-      <img src="groom/4.jpeg" alt="Parth">
-      <img src="groom/5.jpeg" alt="Parth">
-      <img src="groom/6.jpeg" alt="Parth">
-      <div class="carousel-nav" id="groom-nav"></div>
+  <!-- ════════════ SLIDE 2: GROOM ════════════ -->
+  <div class="slide" data-slide="2" data-bg="groom">
+    <canvas class="slide-canvas" data-fx="goldDust"></canvas>
+
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <path d="M60,20 Q90,15 95,40 Q100,65 75,70 Q55,72 52,55 Q50,42 60,38 Q68,35 70,44 Q72,52 64,54" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity=".75"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="50" cy="12" r="1.5" fill="#C9A84C" opacity=".4"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="50" r="1.5" fill="#C9A84C" opacity=".4"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <path d="M60,20 Q90,15 95,40 Q100,65 75,70 Q55,72 52,55" fill="none" stroke="#F0D080" stroke-width="1" opacity=".6"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+
+    <div class="photo-panel" id="groom-panel">
+      <div class="photo-vignette"></div>
+      <div class="show-dots" id="groom-dots"></div>
     </div>
-    <div style="position: absolute; bottom: 80px; left: 0; right: 0; z-index: 10; text-align: center;">
-      <h2 class="slide-title">Parth Jagtap</h2>
+
+    <div class="slide-right">
+      <h2 class="sec-title stag">PARTH<br><em>Jagtap</em></h2>
     </div>
   </div>
 
-  <!-- PAGE 4: BRIDE SLIDESHOW -->
-  <div class="slide" data-slide="3">
-    <div class="photo-carousel" id="bride-carousel">
-      <img src="bride/1.jpeg" class="active" alt="Sai">
-      <img src="bride/2.jpeg" alt="Sai">
-      <img src="bride/3.jpeg" alt="Sai">
-      <img src="bride/4.jpeg" alt="Sai">
-      <img src="bride/5.jpeg" alt="Sai">
-      <img src="bride/6.jpeg" alt="Sai">
-      <div class="carousel-nav" id="bride-nav"></div>
+  <!-- ════════════ SLIDE 3: BRIDE ════════════ -->
+  <div class="slide" data-slide="3" data-bg="bride">
+    <canvas class="slide-canvas" data-fx="goldDust"></canvas>
+
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <path d="M60,20 Q90,15 95,40 Q100,65 75,70 Q55,72 52,55 Q50,42 60,38 Q68,35 70,44 Q72,52 64,54" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity=".75"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <circle cx="30" cy="12" r="1.5" fill="#C9A84C" opacity=".5"/>
+      <circle cx="12" cy="30" r="1.5" fill="#C9A84C" opacity=".5"/>
+    </svg>
+
+    <div class="photo-panel" id="bride-panel">
+      <div class="photo-vignette"></div>
+      <div class="show-dots" id="bride-dots"></div>
     </div>
-    <div style="position: absolute; bottom: 80px; left: 0; right: 0; z-index: 10; text-align: center;">
-      <h2 class="slide-title">Sai Sawant</h2>
+
+    <div class="slide-right">
+      <h2 class="sec-title stag">SAI<br><em>Sawant</em></h2>
     </div>
   </div>
 
-  <!-- PAGE 5: MELLOW WHITE & GOLD DANCE BACKDROP -->
-  <div class="slide" data-slide="4">
-    <canvas class="slide-canvas" id="canvas-dance-1"></canvas>
+  <!-- ════════════ SLIDE 4: MELLOW GOLD DANCE BACKDROP ════════════ -->
+  <div class="slide" data-slide="4" data-bg="mellow-gold">
+    <canvas class="slide-canvas" data-fx="mellowGold"></canvas>
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2" opacity=".5"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C" opacity=".6"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2" opacity=".5"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C" opacity=".6"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2" opacity=".5"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C" opacity=".6"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2" opacity=".5"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C" opacity=".6"/>
+    </svg>
   </div>
 
-  <!-- PAGE 6: JAZZY BOLLYWOOD GLITTER BACKDROP -->
-  <div class="slide" data-slide="5">
-    <canvas class="slide-canvas" id="canvas-dance-2"></canvas>
+  <!-- ════════════ SLIDE 5: BOLLYWOOD GLITTER BACKDROP ════════════ -->
+  <div class="slide" data-slide="5" data-bg="bollywood">
+    <canvas class="slide-canvas" data-fx="bollywoodGlitter"></canvas>
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#FF00FF" stroke-width="2" opacity=".6"/>
+      <circle cx="12" cy="12" r="4" fill="#FF00FF" opacity=".7"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#00FFFF" stroke-width="2" opacity=".6"/>
+      <circle cx="12" cy="12" r="4" fill="#00FFFF" opacity=".7"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#FF00FF" stroke-width="2" opacity=".6"/>
+      <circle cx="12" cy="12" r="4" fill="#FF00FF" opacity=".7"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#00FFFF" stroke-width="2" opacity=".6"/>
+      <circle cx="12" cy="12" r="4" fill="#00FFFF" opacity=".7"/>
+    </svg>
   </div>
 
-  <!-- PAGE 7: BEAUTIFUL GRAPHIC -->
-  <div class="slide" data-slide="6">
-    <canvas class="slide-canvas" id="canvas-graphic"></canvas>
+  <!-- ════════════ SLIDE 6: GRAND MANDALA ════════════ -->
+  <div class="slide" data-slide="6" data-bg="grand-mandala">
+    <canvas class="slide-canvas" data-fx="grandMandala"></canvas>
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(45 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+    </svg>
   </div>
 
-  <!-- PAGE 8: GENERIC PARTH & SAI IMAGE -->
-  <div class="slide" data-slide="7">
-    <img src="generic_parth_sai_bg.png" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;">
+  <!-- ════════════ SLIDE 7: GENERIC PARTH & SAI ════════════ -->
+  <div class="slide" data-slide="7" data-bg="parth-sai-bg">
+    <img src="generic_parth_sai_bg.png" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:0;">
+
+    <svg class="corner-svg tl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(0 38 38)" opacity=".7"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(90 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+    </svg>
+    <svg class="corner-svg tr" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(0 38 38)" opacity=".7"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(90 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+    </svg>
+    <svg class="corner-svg bl" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(45 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+    </svg>
+    <svg class="corner-svg br" viewBox="0 0 220 220" fill="none">
+      <path d="M12,12 L100,12 M12,12 L12,100" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="12" cy="12" r="4" fill="#C9A84C"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#C9A84C" stroke-width="1" transform="rotate(-45 38 38)" opacity=".9"/>
+      <ellipse cx="38" cy="38" rx="13" ry="6" fill="none" stroke="#F0D080" stroke-width=".7" transform="rotate(45 38 38)" opacity=".7"/>
+      <circle cx="38" cy="38" r="4" fill="#C9A84C" opacity=".8"/>
+    </svg>
   </div>
-</div>
+
+</div><!-- end #stage -->
 
 <script>
-  // ═══════════════════════════════════════════════════════
-  // SLIDE MANAGEMENT
-  // ═══════════════════════════════════════════════════════
-  let currentSlide = 0;
-  const slides = document.querySelectorAll('.slide');
-  const totalSlides = slides.length;
+/* ══════════════════════════════════════
+   SLIDE ENGINE
+══════════════════════════════════════ */
+const slides = document.querySelectorAll('.slide');
+const TOTAL = slides.length;
+let cur = 0, transitioning = false;
 
-  function goToSlide(n) {
-    slides[currentSlide].classList.remove('active', 'entering', 'leaving');
-    slides[n].classList.add('active', 'entering');
-    currentSlide = n;
-    updateNav();
-    initCanvasFX(n);
-    document.getElementById('slide-counter').textContent = String(n + 1).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+const dotWrap = document.getElementById('nav-dots');
+slides.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'ndot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotWrap.appendChild(d);
+});
+
+function updateDots() {
+  document.querySelectorAll('.ndot').forEach((d, i) => d.classList.toggle('active', i === cur));
+  document.getElementById('slide-counter').textContent = String(cur + 1).padStart(2, '0') + ' / ' + String(TOTAL).padStart(2, '0');
+}
+
+function goTo(next) {
+  if (transitioning || next === cur || next < 0 || next >= TOTAL) return;
+  transitioning = true;
+  const isBack = next < cur;
+  const from = slides[cur], to = slides[next];
+  const leaveMs = 760, enterMs = 980;
+  let leaveDone = false;
+
+  const startEnter = () => {
+    cur = next;
+    to.classList.add('active');
+    if (isBack) to.classList.add('back');
+    startSlideCanvasFX(to);
+    startSlideshows(to);
+    seedGlitterStars(to);
+    to.classList.add('entering');
+    const doneEnter = () => { to.classList.remove('entering','back'); transitioning = false; updateDots(); };
+    to.addEventListener('animationend', doneEnter, { once: true });
+    setTimeout(doneEnter, enterMs + 80);
+    updateDots();
+  };
+
+  const doneLeave = () => {
+    if (leaveDone) return; leaveDone = true;
+    from.classList.remove('active', 'leaving', 'back');
+    startEnter();
+  };
+
+  from.classList.add('leaving');
+  if (isBack) from.classList.add('back');
+  from.addEventListener('animationend', doneLeave, { once: true });
+  setTimeout(doneLeave, leaveMs + 80);
+}
+
+function isInteractiveEl(el) {
+  if (!el) return false;
+  return ['button','a','input','textarea','select'].includes((el.tagName||'').toLowerCase());
+}
+
+function navNext() { goTo(cur + 1); }
+function navPrev() { goTo(cur - 1); }
+
+window.addEventListener('keydown', e => {
+  if (transitioning) return;
+  const key = e.key || '';
+  const focusedInteractive = isInteractiveEl(document.activeElement);
+  if (key === 'ArrowDown' || key === 'PageDown' || key === 'ArrowRight') { e.preventDefault(); navNext(); return; }
+  if (key === 'ArrowUp' || key === 'PageUp' || key === 'ArrowLeft') { e.preventDefault(); navPrev(); return; }
+  if ((key === 'Enter' || key === ' ') && !focusedInteractive) { e.preventDefault(); navNext(); }
+}, { passive: false });
+
+const stage = document.getElementById('stage');
+if (stage) {
+  stage.addEventListener('click', e => {
+    if (e.target && (e.target.closest('#nav-dots') || e.target.closest('button'))) return;
+    if (e.clientX < window.innerWidth * 0.2) navPrev(); else navNext();
+  });
+
+  let touchStartX = 0, touchStartY = 0;
+  stage.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  stage.addEventListener('touchend', e => {
+    if (e.target && (e.target.closest('#nav-dots') || e.target.closest('button'))) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) < 30 && Math.abs(dy) < 30) { navNext(); return; }
+    if (Math.abs(dy) > Math.abs(dx)) { dy < 0 ? navNext() : navPrev(); }
+    else { dx < 0 ? navNext() : navPrev(); }
+  }, { passive: true });
+}
+
+setInterval(() => {
+  if (!transitioning) return;
+  if (!document.querySelector('.slide.entering, .slide.leaving')) transitioning = false;
+}, 1200);
+
+/* ══════════════════════════════════════
+   PHOTO PANEL SLIDESHOWS
+══════════════════════════════════════ */
+const PHOTO_SETS = {
+  groom: {
+    base: './groom/',
+    files: Array.from({ length: 13 }, (_, i) => [(i + 1) + '.jpeg', 'top center'])
+  },
+  bride: {
+    base: './bride/',
+    files: Array.from({ length: 18 }, (_, i) => [(i + 1) + '.jpeg', 'top center'])
+  },
+};
+
+function initPanelShow(panelId, dotsId, setKey, INTERVAL_MS) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const set = PHOTO_SETS[setKey];
+  if (!set || !set.files.length) return;
+  const dotsEl = document.getElementById(dotsId);
+  const files = set.files;
+  const N = files.length;
+
+  const layerA = document.createElement('div');
+  layerA.className = 'photo-layer main-layer';
+  const layerB = document.createElement('div');
+  layerB.className = 'photo-layer main-layer';
+  const peek = document.createElement('div');
+  peek.className = 'photo-layer peek';
+  const divider = document.createElement('div');
+  divider.className = 'peek-divider';
+
+  panel.appendChild(layerA);
+  panel.appendChild(layerB);
+  panel.appendChild(peek);
+  panel.appendChild(divider);
+
+  let idx = 0, timer = null, useA = true;
+
+  function applyPhoto(el, fileIdx) {
+    const entry = files[fileIdx];
+    const fname = Array.isArray(entry) ? entry[0] : entry;
+    const pos = Array.isArray(entry) ? entry[1] : 'top center';
+    el.style.backgroundImage = `url("${encodeURI(set.base + fname)}")`;
+    el.style.backgroundPosition = pos;
   }
 
-  function nextSlide() {
-    slides[currentSlide].classList.add('leaving');
-    const next = (currentSlide + 1) % totalSlides;
-    goToSlide(next);
+  function resetAnim(el, animName) {
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = animName;
   }
 
-  function prevSlide() {
-    slides[currentSlide].classList.add('leaving', 'back');
-    const prev = (currentSlide - 1 + totalSlides) % totalSlides;
-    goToSlide(prev);
+  function showSlide(i) {
+    idx = ((i % N) + N) % N;
+    const nextIdx = (idx + 1) % N;
+    const incoming = useA ? layerA : layerB;
+    const outgoing = useA ? layerB : layerA;
+    useA = !useA;
+
+    applyPhoto(incoming, idx);
+    incoming.classList.remove('on');
+    void incoming.offsetWidth;
+    resetAnim(incoming, 'kenBurnsFull 10s ease-in-out forwards');
+    incoming.classList.add('on');
+    setTimeout(() => outgoing.classList.remove('on'), 200);
+
+    setTimeout(() => {
+      applyPhoto(peek, nextIdx);
+      peek.classList.remove('on');
+      void peek.offsetWidth;
+      resetAnim(peek, 'kenBurnsPeek 12s ease-in-out forwards');
+      peek.classList.add('on');
+    }, 600);
+
+    if (dotsEl) dotsEl.querySelectorAll('.show-dot').forEach((d, j) => d.classList.toggle('on', j === idx));
   }
 
-  function updateNav() {
-    document.querySelectorAll('.ndot').forEach((dot, i) => {
-      dot.classList.toggle('active', i === currentSlide);
-    });
-  }
-
-  // Create nav dots
-  const navContainer = document.getElementById('nav-dots');
-  for (let i = 0; i < totalSlides; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'ndot' + (i === 0 ? ' active' : '');
-    dot.onclick = () => goToSlide(i);
-    navContainer.appendChild(dot);
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // CAROUSEL SYSTEM
-  // ═══════════════════════════════════════════════════════
-  function initCarousel(carouselId, navId, autoRotate = true) {
-    const carousel = document.getElementById(carouselId);
-    const images = carousel.querySelectorAll('img:not(.carousel-nav)');
-    const nav = document.getElementById(navId);
-    let currentIndex = 0;
-
-    // Create dots
-    images.forEach((_, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-      dot.onclick = () => showImage(i);
-      nav.appendChild(dot);
-    });
-
-    function showImage(index) {
-      images.forEach(img => img.classList.remove('active'));
-      document.querySelectorAll(`#${navId} .carousel-dot`).forEach(d => d.classList.remove('active'));
-      images[index].classList.add('active');
-      document.querySelectorAll(`#${navId} .carousel-dot`)[index].classList.add('active');
-      currentIndex = index;
+  if (dotsEl) {
+    dotsEl.innerHTML = '';
+    const shown = Math.min(N, 12);
+    for (let i = 0; i < shown; i++) {
+      const d = document.createElement('div');
+      d.className = 'show-dot' + (i === 0 ? ' on' : '');
+      const ii = i;
+      d.onclick = e => { e.stopPropagation(); clearInterval(timer); showSlide(ii); timer = setInterval(() => showSlide(idx + 1), INTERVAL_MS); };
+      dotsEl.appendChild(d);
     }
+  }
 
-    if (autoRotate && images.length > 0) {
-      setInterval(() => {
-        showImage((currentIndex + 1) % images.length);
-      }, 4000);
+  function tryStart() {
+    showSlide(0);
+    timer = setInterval(() => showSlide(idx + 1), INTERVAL_MS);
+  }
+
+  const firstEntry = files[0];
+  const firstFile = Array.isArray(firstEntry) ? firstEntry[0] : firstEntry;
+  const p1 = new Image();
+  p1.onload = tryStart; p1.onerror = tryStart;
+  p1.src = encodeURI(set.base + firstFile);
+
+  return { stop: () => clearInterval(timer), jump: i => showSlide(i) };
+}
+
+const slideshowMap = {};
+function startSlideshows(slide) {
+  const bg = slide.dataset.bg;
+  if (bg === 'groom' && !slideshowMap.groom) {
+    slideshowMap.groom = initPanelShow('groom-panel', 'groom-dots', 'groom', 2200);
+  }
+  if (bg === 'bride' && !slideshowMap.bride) {
+    slideshowMap.bride = initPanelShow('bride-panel', 'bride-dots', 'bride', 2200);
+  }
+}
+
+/* ══════════════════════════════════════
+   DOM GLITTER STARS
+══════════════════════════════════════ */
+function makeStar4(color1, color2) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '-10 -10 20 20');
+  svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%');
+  const pts = [];
+  for (let i = 0; i < 8; i++) {
+    const a = (i * Math.PI) / 4;
+    const r = i % 2 === 0 ? 9 : 3.5;
+    pts.push(`${Math.cos(a) * r},${Math.sin(a) * r}`);
+  }
+  const poly = document.createElementNS(ns, 'polygon');
+  poly.setAttribute('points', pts.join(' '));
+  poly.setAttribute('fill', color1);
+  svg.appendChild(poly);
+  const c = document.createElementNS(ns, 'circle');
+  c.setAttribute('cx', '0'); c.setAttribute('cy', '0'); c.setAttribute('r', '2.5');
+  c.setAttribute('fill', color2);
+  svg.appendChild(c);
+  return svg;
+}
+
+const STAR_PALETTES = {
+  hero:     [['#F0D080','#FFFFFF'],['#C9A84C','#FAF0C0'],['#E8E8F0','#C9A84C']],
+  'ganesh-full': [['#FFD700','#FFF0A0'],['#C9A84C','#FFFFFF'],['#F0D080','#FFD700']],
+  groom:    [['#C9A84C','#F0D080'],['#F0D080','#FFFFFF'],['#E8E8F0','#C9A84C']],
+  bride:    [['#F0D080','#FFD0E0'],['#C9A84C','#F5F5FF'],['#E8E8F0','#F0D080']],
+  'mellow-gold': [['#C9A84C','#FAF0C0'],['#F0D080','#FFFFFF'],['#FAD02E','#F5C842']],
+  'bollywood': [['#FF00FF','#FFFFFF'],['#00FFFF','#FFD700'],['#FF1493','#00FF00']],
+  'grand-mandala': [['#FFD700','#FFFFFF'],['#C9A84C','#F0D080'],['#F0D080','#FFD700'],['#E8E8F0','#C9A84C']],
+  'parth-sai-bg': [['#C9A84C','#F0D080'],['#F0D080','#FFFFFF'],['#E8E8F0','#C9A84C']],
+};
+
+function seedGlitterStars(slide) {
+  slide.querySelectorAll('.glitter-star').forEach(s => s.remove());
+  const bg = slide.dataset.bg || 'hero';
+  const palette = STAR_PALETTES[bg] || STAR_PALETTES.hero;
+  const count = 18;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'glitter-star';
+    const sz = (8 + Math.random() * 22).toFixed(1) + 'px';
+    const left = (Math.random() * 96).toFixed(1) + '%';
+    const top  = (Math.random() * 94).toFixed(1) + '%';
+    const dur  = (1.2 + Math.random() * 2.8).toFixed(2) + 's';
+    const delay= (Math.random() * 3).toFixed(2) + 's';
+    el.style.cssText = `left:${left};top:${top};--gs:${sz};--gd:${dur};--gdelay:${delay};`;
+    const [c1, c2] = palette[Math.floor(Math.random() * palette.length)];
+    el.appendChild(makeStar4(c1, c2));
+    slide.appendChild(el);
+  }
+}
+
+seedGlitterStars(slides[0]);
+
+/* ══════════════════════════════════════
+   GLOBAL CANVAS — petal shower
+══════════════════════════════════════ */
+const GC = document.getElementById('global-canvas');
+const gc = GC.getContext('2d');
+function rsGC() { GC.width = innerWidth; GC.height = innerHeight; }
+rsGC(); window.addEventListener('resize', rsGC);
+
+class Petal {
+  constructor(early) { this.reset(early); }
+  reset(early) {
+    this.x = Math.random() * innerWidth;
+    this.y = early ? Math.random() * innerHeight : -20;
+    this.sz = Math.random() * 11 + 5;
+    this.sp = Math.random() * 1.1 + 0.4;
+    this.dr = Math.random() * 1.4 - 0.7;
+    this.r  = Math.random() * Math.PI * 2;
+    this.rs = (Math.random() - .5) * .06;
+    this.a  = Math.random() * .55 + .15;
+    const cc = ['#C9A84C','#F0D080','#FFD700','#FFA040','#FFCC44','#FFB347','#FAD02E','#E8C870','#F5C842','#FF8C69','#FFB6C1','#FAF0C0'];
+    this.c = cc[Math.floor(Math.random() * cc.length)];
+    this.type = Math.random() < 0.55 ? 'petal' : 'circle';
+  }
+  step() {
+    this.y += this.sp; this.x += this.dr + Math.sin(this.y * .018) * .6; this.r += this.rs;
+    if (this.y > innerHeight + 20) this.reset(false);
+  }
+  draw() {
+    gc.save(); gc.globalAlpha = this.a; gc.translate(this.x, this.y); gc.rotate(this.r);
+    if (this.type === 'petal') {
+      gc.beginPath(); gc.ellipse(0, 0, this.sz, this.sz * .38, 0, 0, Math.PI * 2);
+    } else {
+      gc.beginPath(); gc.arc(0, 0, this.sz * 0.5, 0, Math.PI * 2);
     }
+    gc.fillStyle = this.c; gc.fill(); gc.restore();
   }
+}
 
-  // ═══════════════════════════════════════════════════════
-  // CANVAS VISUAL EFFECTS
-  // ═══════════════════════════════════════════════════════
-  function initCanvasFX(slideIndex) {
-    if (slideIndex === 0) drawHeroCanvas();
-    else if (slideIndex === 1) drawGaneshCanvas();
-    else if (slideIndex === 4) drawDanceBackdrop1();
-    else if (slideIndex === 5) drawDanceBackdrop2();
-    else if (slideIndex === 6) drawGraphicCanvas();
-  }
+const petals = Array.from({ length: 80 }, (_, i) => new Petal(i < 40));
+(function aPetals() {
+  gc.clearRect(0, 0, GC.width, GC.height);
+  petals.forEach(p => { p.step(); p.draw(); });
+  requestAnimationFrame(aPetals);
+})();
 
-  function drawHeroCanvas() {
-    const canvas = document.getElementById('canvas-hero');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+/* ══════════════════════════════════════
+   PER-SLIDE CANVAS FX
+══════════════════════════════════════ */
+const fxLoops = {};
+function startSlideCanvasFX(slide) {
+  const canvas = slide.querySelector('.slide-canvas');
+  if (!canvas) return;
+  const fx = canvas.dataset.fx;
+  if (fxLoops[slide.dataset.slide]) return;
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  window.addEventListener('resize', () => { canvas.width = innerWidth; canvas.height = innerHeight; });
+  const ctx = canvas.getContext('2d');
+  let raf;
 
-    let time = 0;
-    function animate() {
+  if (fx === 'mandala') {
+    function drawMandala(t) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2, cy = canvas.height / 2;
+      const glow = 0.5 + 0.5 * Math.sin(t * 0.001);
+      const grd = ctx.createRadialGradient(cx, cy, 60, cx, cy, Math.min(cx, cy) * 0.85);
+      grd.addColorStop(0, `rgba(201,168,76,${0.07 * glow})`);
+      grd.addColorStop(0.5, `rgba(240,208,128,${0.04 * glow})`);
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Gradient background
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, '#0a0a0f');
-      gradient.addColorStop(0.5, '#1a1520');
-      gradient.addColorStop(1, '#0a0a0f');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Animated particles
-      ctx.fillStyle = 'rgba(201, 168, 76, 0.1)';
-      for (let i = 0; i < 50; i++) {
-        const x = (Math.sin(time * 0.001 + i) * canvas.width * 0.3 + canvas.width * 0.5);
-        const y = (Math.cos(time * 0.0008 + i * 0.5) * canvas.height * 0.3 + canvas.height * 0.5);
-        const size = Math.sin(time * 0.002 + i) * 2 + 3;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.00035);
+      const R1 = Math.min(cx, cy) * 0.38;
+      for (let i = 0; i < 16; i++) {
+        ctx.save(); ctx.rotate((i / 16) * Math.PI * 2);
         ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.ellipse(R1, 0, R1 * 0.22, R1 * 0.07, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(201,168,76,${0.14 + 0.07 * Math.sin(t * 0.002 + i)})`; ctx.lineWidth = 1; ctx.stroke();
+        ctx.restore();
       }
+      ctx.restore();
 
-      // Gold glitter
-      ctx.fillStyle = 'rgba(240, 208, 128, 0.3)';
-      for (let i = 0; i < 30; i++) {
-        const x = (i * 150 + time * 0.1) % canvas.width;
-        const y = Math.sin(x * 0.01 + time * 0.001) * 100 + canvas.height * 0.5;
-        ctx.fillRect(x, y, 2, 2);
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(-t * 0.00022);
+      const R2 = Math.min(cx, cy) * 0.55;
+      for (let i = 0; i < 12; i++) {
+        ctx.save(); ctx.rotate((i / 12) * Math.PI * 2);
+        ctx.beginPath();
+        ctx.arc(R2, 0, R2 * 0.14, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(240,208,128,${0.10 + 0.06 * Math.sin(t * 0.0018 + i * 0.5)})`; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.restore();
       }
+      ctx.restore();
 
-      time++;
-      requestAnimationFrame(animate);
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.00015);
+      const R3 = Math.min(cx, cy) * 0.70;
+      for (let i = 0; i < 24; i++) {
+        const a = (i / 24) * Math.PI * 2;
+        const pulse = 0.5 + 0.5 * Math.sin(t * 0.003 + i * 0.4);
+        ctx.beginPath(); ctx.arc(Math.cos(a) * R3, Math.sin(a) * R3, 2.5 * pulse, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(232,232,240,${0.22 * pulse})`; ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.0005);
+      for (let i = 0; i < 8; i++) {
+        ctx.save(); ctx.rotate((i / 8) * Math.PI * 2);
+        ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(Math.min(cx, cy) * 0.28, 0);
+        ctx.strokeStyle = `rgba(201,168,76,${0.12 + 0.06 * Math.sin(t * 0.002 + i)})`; ctx.lineWidth = 1; ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+      raf = requestAnimationFrame(drawMandala);
     }
-    animate();
+    raf = requestAnimationFrame(drawMandala);
   }
 
-  function drawGaneshCanvas() {
-    const canvas = document.getElementById('canvas-ganesh');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    // Fetch and display Ganesh image
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = 'https://images.unsplash.com/photo-1599846875957-fef7b41f36c5?w=1200&h=800&fit=crop'; // Beautiful Ganesh with diyas
-
-    img.onload = function() {
-      function animate() {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Draw image centered with slight zoom animation
-        const scale = 0.9 + Math.sin(Date.now() * 0.0005) * 0.05;
-        const w = img.width * scale;
-        const h = img.height * scale;
-        const x = (canvas.width - w) / 2;
-        const y = (canvas.height - h) / 2;
-
-        ctx.drawImage(img, x, y, w, h);
-
-        // Add glow effect
-        ctx.shadowColor = 'rgba(201, 168, 76, 0.3)';
-        ctx.shadowBlur = 40;
-
-        requestAnimationFrame(animate);
+  else if (fx === 'goldDust') {
+    const motes = Array.from({ length: 110 }, () => ({
+      x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+      vx: (Math.random() - .5) * .3, vy: -(Math.random() * .6 + .2),
+      r: Math.random() * 2.8 + .4, a: Math.random() * .55 + .12,
+      c: Math.random() < 0.3 ? '#E8E8F0' : (Math.random() < 0.6 ? '#F0D080' : '#C9A84C')
+    }));
+    function drawGoldDust(t) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      motes.forEach(m => {
+        m.x += m.vx; m.y += m.vy + Math.sin(t * 0.001 + m.x * 0.01) * 0.15;
+        if (m.y < -10) { m.y = canvas.height + 10; m.x = Math.random() * canvas.width; }
+        if (m.x < 0) m.x = canvas.width; if (m.x > canvas.width) m.x = 0;
+        const twinkle = 0.5 + 0.5 * Math.sin(t * 0.004 + m.x + m.y);
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r * twinkle, 0, Math.PI * 2);
+        ctx.fillStyle = m.c; ctx.globalAlpha = m.a * twinkle; ctx.fill(); ctx.globalAlpha = 1;
+      });
+      if (Math.random() < 0.012) {
+        const sx = Math.random() * canvas.width, sy = Math.random() * canvas.height * 0.5;
+        const g = ctx.createLinearGradient(sx, sy, sx + 120, sy + 40);
+        g.addColorStop(0, 'rgba(240,208,128,0)'); g.addColorStop(.45, 'rgba(240,208,128,.055)'); g.addColorStop(1, 'rgba(201,168,76,0)');
+        ctx.fillStyle = g; ctx.globalAlpha = 1; ctx.fillRect(sx - 20, sy - 1, 150, 3);
       }
-      animate();
-    };
-  }
-
-  function drawDanceBackdrop1() {
-    const canvas = document.getElementById('canvas-dance-1');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let time = 0;
-    function animate() {
-      // Mellow white and gold gradient
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, '#f5f0e8');
-      gradient.addColorStop(0.5, '#faf8f3');
-      gradient.addColorStop(1, '#f0e8d0');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Soft gold accents
-      ctx.fillStyle = `rgba(201, 168, 76, ${0.08 + Math.sin(time * 0.003) * 0.04})`;
-      for (let i = 0; i < 15; i++) {
-        const x = (Math.sin(time * 0.0002 + i) * canvas.width * 0.4 + canvas.width * 0.5);
-        const y = (Math.cos(time * 0.00015 + i * 0.7) * canvas.height * 0.4 + canvas.height * 0.5);
-        ctx.beginPath();
-        ctx.arc(x, y, 60 + Math.sin(time * 0.002 + i) * 20, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      time++;
-      requestAnimationFrame(animate);
+      raf = requestAnimationFrame(drawGoldDust);
     }
-    animate();
+    raf = requestAnimationFrame(drawGoldDust);
   }
 
-  function drawDanceBackdrop2() {
-    const canvas = document.getElementById('canvas-dance-2');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  else if (fx === 'ganeshFull') {
+    function drawGaneshFull(t) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2, cy = canvas.height / 2;
+      const glow = 0.5 + 0.5 * Math.sin(t * 0.0012);
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(cx,cy) * 0.9);
+      grd.addColorStop(0, `rgba(255,180,0,${0.12 * glow})`);
+      grd.addColorStop(0.4, `rgba(201,168,76,${0.08 * glow})`);
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let time = 0;
-    function animate() {
-      // Dark background for glitter
-      ctx.fillStyle = '#0a0a0f';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Mandala rings
+      [[16, 0.00040, 0.30, 0.18, '#C9A84C'],
+       [12, -0.00028, 0.50, 0.12, '#F0D080'],
+       [24, 0.00016, 0.68, 0.08, '#E8E8F0']].forEach(([n, spd, rf, alpha, col]) => {
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * spd);
+        const R = Math.min(cx, cy) * rf;
+        for (let i = 0; i < n; i++) {
+          ctx.save(); ctx.rotate((i / n) * Math.PI * 2);
+          ctx.beginPath(); ctx.ellipse(R, 0, R * 0.18, R * 0.055, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = col.replace(')', `,${alpha + 0.06 * Math.sin(t * 0.002 + i)})`).replace('rgb(', 'rgba('); ctx.lineWidth = 1; ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      });
 
-      // Jazzy neon colors
-      const colors = ['#ff006e', '#8338ec', '#3a86ff', '#fb5607', '#ffbe0b'];
+      // Kalash
+      ctx.save(); ctx.translate(cx, cy);
+      const kScale = 0.5 + 0.5 * Math.sin(t * 0.001);
+      ctx.strokeStyle = `rgba(201,168,76,${0.10 + 0.06 * kScale})`; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-18, 28); ctx.bezierCurveTo(-22, 0, -20, -18, 0, -28); ctx.bezierCurveTo(20, -18, 22, 0, 18, 28); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -28); ctx.bezierCurveTo(-12, -42, -20, -50, -8, -52); ctx.bezierCurveTo(-4, -48, 0, -36, 0, -28); ctx.strokeStyle = `rgba(201,168,76,${0.14})`; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -28); ctx.bezierCurveTo(12, -42, 20, -50, 8, -52); ctx.bezierCurveTo(4, -48, 0, -36, 0, -28); ctx.stroke();
+      ctx.restore();
 
-      // Animated geometric shapes
-      for (let i = 0; i < 40; i++) {
-        const angle = (time * 0.01 + i * 0.16) % (Math.PI * 2);
-        const radius = 150 + Math.sin(time * 0.002 + i) * 80;
-        const x = canvas.width * 0.5 + Math.cos(angle) * radius;
-        const y = canvas.height * 0.5 + Math.sin(angle) * radius;
-
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.globalAlpha = 0.3 + Math.sin(time * 0.005 + i) * 0.2;
-        ctx.beginPath();
-        ctx.arc(x, y, 15 + Math.sin(time * 0.003 + i) * 8, 0, Math.PI * 2);
-        ctx.fill();
+      // Diyas across bottom
+      for (let i = 0; i < 12; i++) {
+        const x = (i / 11) * canvas.width;
+        const y = canvas.height * 0.85;
+        const flicker = 0.7 + 0.3 * Math.sin(t * 0.010 + i * 1.3);
+        ctx.save(); ctx.translate(x, y);
+        ctx.beginPath(); ctx.ellipse(0, 0, 12, 5, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(201,168,76,${0.3 * flicker})`; ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -2); ctx.bezierCurveTo(4, -14, 4, -24, 0, -30 * flicker); ctx.bezierCurveTo(-4, -24, -4, -14, 0, -2);
+        const fg = ctx.createLinearGradient(0, -2, 0, -30 * flicker);
+        fg.addColorStop(0, 'rgba(255,140,0,0.6)'); fg.addColorStop(0.5, 'rgba(255,200,0,0.4)'); fg.addColorStop(1, 'rgba(255,255,200,0.15)');
+        ctx.fillStyle = fg; ctx.fill(); ctx.restore();
       }
 
-      // Glitter particles
-      ctx.globalAlpha = 0.8;
-      ctx.fillStyle = '#ffbe0b';
-      for (let i = 0; i < 100; i++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height;
-        const size = Math.sin(time * 0.01 + i * 0.1) * 2 + 2;
-        ctx.fillRect(x, y, size, size);
-      }
+      raf = requestAnimationFrame(drawGaneshFull);
+    }
+    raf = requestAnimationFrame(drawGaneshFull);
+  }
+
+  else if (fx === 'mellowGold') {
+    const orbs = Array.from({ length: 8 }, () => ({
+      x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.2,
+      r: Math.random() * 60 + 40, phase: Math.random() * Math.PI * 2
+    }));
+    function drawMellow(t) {
+      const grd = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.7);
+      grd.addColorStop(0, '#faf6ee');
+      grd.addColorStop(0.6, '#f5ede0');
+      grd.addColorStop(1, '#faf6ee');
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      orbs.forEach(o => {
+        o.x += o.vx; o.y += o.vy;
+        if (o.x < -o.r) o.x = canvas.width + o.r;
+        if (o.x > canvas.width + o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = canvas.height + o.r;
+        if (o.y > canvas.height + o.r) o.y = -o.r;
+
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        g.addColorStop(0, `rgba(201,168,76,${0.15 + 0.08 * Math.sin(t * 0.001 + o.phase)})`);
+        g.addColorStop(1, 'rgba(201,168,76,0)');
+        ctx.fillStyle = g; ctx.fillRect(o.x - o.r, o.y - o.r, o.r * 2, o.r * 2);
+      });
+
+      const sweep = ((t * 0.0005) % 1);
+      const shimmer = ctx.createLinearGradient(sweep * canvas.width - 200, 0, sweep * canvas.width + 200, 0);
+      shimmer.addColorStop(0, 'rgba(0,0,0,0)');
+      shimmer.addColorStop(0.5, `rgba(240,208,128,${0.08})`);
+      shimmer.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = shimmer; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      raf = requestAnimationFrame(drawMellow);
+    }
+    raf = requestAnimationFrame(drawMellow);
+  }
+
+  else if (fx === 'bollywoodGlitter') {
+    const discos = Array.from({ length: 60 }, () => ({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 400,
+      y: canvas.height / 2 + (Math.random() - 0.5) * 400,
+      r: Math.random() * 40 + 20,
+      phase: Math.random() * Math.PI * 2,
+      c: ['#FF00FF','#00FFFF','#FFD700','#FF1493','#00FF00'][Math.floor(Math.random() * 5)]
+    }));
+    const glitter = Array.from({ length: 200 }, () => ({
+      x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+      phase: Math.random() * Math.PI * 2
+    }));
+    function drawBollywood(t) {
+      ctx.fillStyle = '#1a002a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      discos.forEach(d => {
+        const a = Math.abs(Math.sin(t * 0.003 + d.phase)) * 0.7;
+        ctx.save(); ctx.globalAlpha = a;
+        ctx.strokeStyle = d.c; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      });
+
+      glitter.forEach(g => {
+        const a = Math.abs(Math.sin(t * 0.006 + g.phase)) * 0.8;
+        ctx.fillStyle = '#FFD700'; ctx.globalAlpha = a;
+        ctx.beginPath(); ctx.arc(g.x, g.y, 2, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // Center rotating ring
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = '#FF00FF';
+      ctx.lineWidth = 2;
+      ctx.save(); ctx.translate(canvas.width / 2, canvas.height / 2); ctx.rotate(t * 0.002);
+      ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
 
       ctx.globalAlpha = 1;
-      time++;
-      requestAnimationFrame(animate);
+      raf = requestAnimationFrame(drawBollywood);
     }
-    animate();
+    raf = requestAnimationFrame(drawBollywood);
   }
 
-  function drawGraphicCanvas() {
-    const canvas = document.getElementById('canvas-graphic');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  else if (fx === 'grandMandala') {
+    function drawGrandMandala(t) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2, cy = canvas.height / 2;
 
-    let time = 0;
-    function animate() {
-      // Mandala-inspired background
-      const gradient = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.5, 0, canvas.width * 0.5, canvas.height * 0.5, canvas.width);
-      gradient.addColorStop(0, '#1a1520');
-      gradient.addColorStop(0.5, '#0f0a12');
-      gradient.addColorStop(1, '#000');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Bg gradient
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(cx,cy));
+      grd.addColorStop(0, 'rgba(201,168,76,0.05)');
+      grd.addColorStop(0.5, 'rgba(139,105,20,0.03)');
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Rotating mandala patterns
-      ctx.strokeStyle = 'rgba(201, 168, 76, 0.5)';
-      ctx.lineWidth = 2;
-      for (let r = 1; r < 8; r++) {
-        ctx.beginPath();
-        const radius = 50 * r + Math.sin(time * 0.002) * 30;
-        ctx.arc(canvas.width * 0.5, canvas.height * 0.5, radius, 0, Math.PI * 2);
-        ctx.stroke();
-      }
+      // 5 mandala rings
+      [[20, 0.00045, 0.25, 0.16, '#F0D080'],
+       [16, -0.00032, 0.40, 0.14, '#C9A84C'],
+       [12, 0.00025, 0.55, 0.12, '#FFD700'],
+       [18, -0.00018, 0.68, 0.10, '#E8E8F0'],
+       [24, 0.00012, 0.80, 0.08, '#F0D080']].forEach(([n, spd, rf, alpha, col]) => {
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * spd);
+        const R = Math.min(cx, cy) * rf;
+        for (let i = 0; i < n; i++) {
+          ctx.save(); ctx.rotate((i / n) * Math.PI * 2);
+          ctx.beginPath(); ctx.ellipse(R, 0, R * 0.20, R * 0.06, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = col.replace(')', `,${alpha + 0.06 * Math.sin(t * 0.002 + i)})`).replace('rgb(', 'rgba('); ctx.lineWidth = 1.2; ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      });
 
-      // Rotating spokes
-      ctx.strokeStyle = 'rgba(240, 208, 128, 0.4)';
+      // Peacock fans at sides
+      [cx * 0.1, cx * 1.9].forEach((px, side) => {
+        ctx.save(); ctx.translate(px, cy + 40);
+        const base = side === 0 ? 0 : Math.PI;
+        const spread = 1.0;
+        for (let i = 0; i < 12; i++) {
+          const a = base + (i / 11 - 0.5) * spread;
+          const len = 140 + 30 * Math.sin(t * 0.0015 + i * 0.35);
+          const alpha = 0.08 + 0.04 * Math.sin(t * 0.002 + i * 0.4);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          const ex = Math.cos(a) * len, ey = Math.sin(a) * len;
+          const mx = Math.cos(a + 0.15) * len * 0.6, my = Math.sin(a + 0.15) * len * 0.6;
+          ctx.quadraticCurveTo(mx, my, ex, ey);
+          ctx.strokeStyle = i % 3 === 0 ? `rgba(201,168,76,${alpha*1.4})` : (i % 3 === 1 ? `rgba(240,208,128,${alpha})` : `rgba(232,232,240,${alpha * 0.8})`);
+          ctx.lineWidth = 1.2; ctx.stroke();
+        }
+        ctx.restore();
+      });
+
+      // Kalash & diya center
+      ctx.save(); ctx.translate(cx, cy);
+      ctx.strokeStyle = 'rgba(201,168,76,0.15)'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-20, 32); ctx.bezierCurveTo(-25, 0, -22, -20, 0, -32); ctx.bezierCurveTo(22, -20, 25, 0, 20, 32); ctx.closePath(); ctx.stroke();
+      ctx.restore();
+
+      // Bottom diyas
       for (let i = 0; i < 12; i++) {
-        const angle = (i * Math.PI / 6) + time * 0.002;
-        const startX = canvas.width * 0.5;
-        const startY = canvas.height * 0.5;
-        const endX = startX + Math.cos(angle) * 300;
-        const endY = startY + Math.sin(angle) * 300;
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
+        const x = (i / 11) * canvas.width;
+        const y = canvas.height * 0.88;
+        const flicker = 0.6 + 0.4 * Math.sin(t * 0.012 + i * 1.5);
+        ctx.save(); ctx.translate(x, y);
+        ctx.beginPath(); ctx.ellipse(0, 0, 14, 6, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(201,168,76,${0.25 * flicker})`; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -3); ctx.bezierCurveTo(5, -14, 5, -26, 0, -32 * flicker); ctx.bezierCurveTo(-5, -26, -5, -14, 0, -3);
+        const fg = ctx.createLinearGradient(0, -3, 0, -32 * flicker);
+        fg.addColorStop(0, 'rgba(255,140,0,0.5)'); fg.addColorStop(0.5, 'rgba(255,200,0,0.35)'); fg.addColorStop(1, 'rgba(255,255,200,0.12)');
+        ctx.fillStyle = fg; ctx.fill(); ctx.restore();
       }
 
-      // Center glow
-      const centerGradient = ctx.createRadialGradient(canvas.width * 0.5, canvas.height * 0.5, 0, canvas.width * 0.5, canvas.height * 0.5, 100);
-      centerGradient.addColorStop(0, 'rgba(240, 208, 128, 0.3)');
-      centerGradient.addColorStop(1, 'rgba(240, 208, 128, 0)');
-      ctx.fillStyle = centerGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      time++;
-      requestAnimationFrame(animate);
+      raf = requestAnimationFrame(drawGrandMandala);
     }
-    animate();
+    raf = requestAnimationFrame(drawGrandMandala);
   }
 
-  // ═══════════════════════════════════════════════════════
-  // KEYBOARD & TOUCH CONTROLS
-  // ═══════════════════════════════════════════════════════
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === 'Enter') nextSlide();
-    if (e.key === 'ArrowLeft') prevSlide();
-  });
+  fxLoops[slide.dataset.slide] = raf;
+}
 
-  document.addEventListener('click', nextSlide);
-
-  let touchStartX = 0;
-  document.addEventListener('touchstart', (e) => touchStartX = e.touches[0].clientX);
-  document.addEventListener('touchend', (e) => {
-    const touchEndX = e.changedTouches[0].clientX;
-    if (touchStartX - touchEndX > 50) nextSlide();
-    if (touchEndX - touchStartX > 50) prevSlide();
-  });
-
-  // ═══════════════════════════════════════════════════════
-  // INITIALIZATION
-  // ═══════════════════════════════════════════════════════
-  window.addEventListener('load', () => {
-    initCarousel('groom-carousel', 'groom-nav', true);
-    initCarousel('bride-carousel', 'bride-nav', true);
-    initCanvasFX(0);
-  });
-
-  window.addEventListener('resize', () => {
-    initCanvasFX(currentSlide);
-  });
-
-  updateNav();
+startSlideCanvasFX(slides[0]);
+updateDots();
 </script>
 
 </body>
